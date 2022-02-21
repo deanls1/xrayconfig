@@ -7,7 +7,7 @@ function installNginx() {
   echo "install Nginx"
   apt-get update && apt install nginx
   systemctl enable nginx.service && systemctl start nginx.service && rm -rf /etc/nginx/nginx.conf
-  wget -O /etc/nginx/nginx.conf "https://drive.google.com/uc?export=download&id=1me_vgjO5gahsxwjTm78SnVbSHKRAdeLh"
+  wget -O /etc/nginx/nginx.conf "https://drive.google.com/uc?export=download&id=1dVc6fyfElkiMlMq-S9jENz6NoAFTfyxi"
 }
 
 function installCert() {
