@@ -17,12 +17,12 @@ function installNginx() {
   str='server_name  '"$sn"';'
   sed -i '64 i \\t\t'"$str"''  /etc/nginx/nginx.conf
   sed -i '71 i \\t\t'"$str"''  /etc/nginx/nginx.conf
-  echo "install Nginx success"
+  return 0
 }
 
 function installCert() {
   apt -y update && apt -y install snapd && snap install core && sudo snap refresh core && snap install --classic certbot && ln -s /snap/bin/certbot /usr/bin/certbot
-  echo "install Cert success"
+  return 0
 }
 function optimizing_system() {
   sed -i '/fs.file-max/d' /etc/sysctl.conf
@@ -63,6 +63,21 @@ net.ipv4.ip_forward = 1" >>/etc/sysctl.conf
 *               hard    nofile          1000000" >/etc/security/limits.conf
   echo "ulimit -SHn 1000000" >>/etc/profile
   echo -e "\033[31m your uuid $1 $2 \033[0m"
+  if [ $3==0 ];then
+    echo "nginx success"
+  else
+    echo "nginx fail"
+  fi
+  if [ $4==0 ];then
+    echo "cert success"
+  else
+    echo "cert fail"
+  fi
+  if [ $5==0 ];then
+    echo "bbr success"
+  else
+    echo "bbr fail"
+  fi
 
   # echo "your uuid $1 $2 "
   read -p "需要重启VPS后，才能生效系统优化配置，是否现在重启 ? [Y/n] :" yn
@@ -77,7 +92,7 @@ function bbr() {
   echo "net.ipv4.tcp_congestion_control=bbr" >>/etc/sysctl.conf
   sysctl -p
   lsmod | grep bbr
-  echo "bbr success"
+  return 0
 }
 echo "install xray"
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install -u root
@@ -91,7 +106,7 @@ if [ $? == 0 ]; then
   bbrstatus=$(bbr)
   systemctl restart xray
   # echo "your uuid : $myuuid "
-  optimizing_system $myuuid 
+  optimizing_system $myuuid $nginxstatus $certstatus $bbrstatus
 else
   echo "fail to install xray"
   exit 8
