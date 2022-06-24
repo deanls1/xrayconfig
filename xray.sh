@@ -3,10 +3,10 @@ function changeXrayConfig() {
   wget -O /usr/local/etc/xray/config.json "https://drive.google.com/uc?export=download&id=1F9QpIKERjoUg0wa8CfXDlvCLk13WaL3a"
   id=$(xray uuid)
   str='"id": "'"$id"'",'
-  sed -i '13 i  '"$str"''  /usr/local/etc/xray/config.json 
+  sed -i '13 i \\t\t\t            '"$str"''  /usr/local/etc/xray/config.json 
   read -p "input servername: " sn
   str2='"serverName": "'"$sn"'",'
-  sed -i '34 i '"$str2"''  /usr/local/etc/xray/config.json
+  sed -i '34 i \\t\t            '"$str2"''  /usr/local/etc/xray/config.json
   echo $str
 }
 function installNginx() {
@@ -15,8 +15,8 @@ function installNginx() {
   wget -O /etc/nginx/nginx.conf "https://drive.google.com/uc?export=download&id=12sxkIu5rTuROfVrZolLhRN3sc5emEvxv"
   read -p "input servername: " sn
   str='server_name  '"$sn"';'
-  sed -i '64 i '"$str"''  /etc/nginx/nginx.conf
-  sed -i '71 i '"$str"''  /etc/nginx/nginx.conf
+  sed -i '64 i \\t\t'"$str"''  /etc/nginx/nginx.conf
+  sed -i '71 i \\t\t'"$str"''  /etc/nginx/nginx.conf
   echo "install Nginx success"
 }
 
