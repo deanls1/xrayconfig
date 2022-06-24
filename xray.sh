@@ -1,18 +1,28 @@
 function changeXrayConfig() {
-  echo "change xray config"
   rm -rf /usr/local/etc/xray/config.json
-  wget -O /usr/local/etc/xray/config.json "https://drive.google.com/uc?export=download&id=1LZJKqA_Ks9BIsla7aW5roFL7Pmqq_1os"
+  wget -O /usr/local/etc/xray/config.json "https://drive.google.com/uc?export=download&id=1F9QpIKERjoUg0wa8CfXDlvCLk13WaL3a"
+  id=$(xray uuid)
+  str='"id": "'"$id"'",'
+  sed -i '13 i  '"$str"''  /usr/local/etc/xray/config.json 
+  read -p "input servername: " sn
+  str2='"serverName": "'"$sn"'",'
+  sed -i '34 i '"$str2"''  /usr/local/etc/xray/config.json
+  echo $str
 }
 function installNginx() {
-  echo "install Nginx"
-  apt-get update && apt install nginx
+  apt-get -y update && apt -y install nginx
   systemctl enable nginx.service && systemctl start nginx.service && rm -rf /etc/nginx/nginx.conf
-  wget -O /etc/nginx/nginx.conf "https://drive.google.com/uc?export=download&id=1dVc6fyfElkiMlMq-S9jENz6NoAFTfyxi"
+  wget -O /etc/nginx/nginx.conf "https://drive.google.com/uc?export=download&id=12sxkIu5rTuROfVrZolLhRN3sc5emEvxv"
+  read -p "input servername: " sn
+  str='server_name  '"$sn"';'
+  sed -i '64 i '"$str"''  /etc/nginx/nginx.conf
+  sed -i '71 i '"$str"''  /etc/nginx/nginx.conf
+  echo "install Nginx success"
 }
 
 function installCert() {
-  echo "install Cert"
-  apt update && apt install snapd && snap install core && sudo snap refresh core && snap install --classic certbot && ln -s /snap/bin/certbot /usr/bin/certbot
+  apt -y update && apt -y install snapd && snap install core && sudo snap refresh core && snap install --classic certbot && ln -s /snap/bin/certbot /usr/bin/certbot
+  echo "install Cert success"
 }
 function optimizing_system() {
   sed -i '/fs.file-max/d' /etc/sysctl.conf
@@ -52,6 +62,9 @@ net.ipv4.ip_forward = 1" >>/etc/sysctl.conf
   echo "*               soft    nofile           1000000
 *               hard    nofile          1000000" >/etc/security/limits.conf
   echo "ulimit -SHn 1000000" >>/etc/profile
+  echo -e "\033[31m your uuid $1 $2 \033[0m"
+
+  # echo "your uuid $1 $2 "
   read -p "需要重启VPS后，才能生效系统优化配置，是否现在重启 ? [Y/n] :" yn
   [ -z "${yn}" ] && yn="y"
   if [[ $yn == [Yy] ]]; then
@@ -64,19 +77,21 @@ function bbr() {
   echo "net.ipv4.tcp_congestion_control=bbr" >>/etc/sysctl.conf
   sysctl -p
   lsmod | grep bbr
+  echo "bbr success"
 }
 echo "install xray"
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install -u root
 if [ $? == 0 ]; then
   echo "install xray success"
-  apt install wget
-  changeXrayConfig
-  installNginx
-  installCert
+  apt -y install wget
+  myuuid=$(changeXrayConfig)
+  nginxstatus=$(installNginx)
+  certstatus=$(installCert)
   certbot certonly --preferred-challenges dns --manual -d *.deanls.top --server https://acme-v02.api.letsencrypt.org/directory
-  bbr
+  bbrstatus=$(bbr)
   systemctl restart xray
-  optimizing_system
+  # echo "your uuid : $myuuid "
+  optimizing_system $myuuid 
 else
   echo "fail to install xray"
   exit 8
